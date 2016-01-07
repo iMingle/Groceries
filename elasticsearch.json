@@ -41,11 +41,11 @@
 ["curl -XPUT 'http://localhost:9200/index/news/_mapping/'"]
 // 创建数据mapping
 {
-	"news": {	// 建立news的type
-		"properties": {	// 下面是定义各个字段
+	"news": { // 建立news的type
+		"properties": { // 下面是定义各个字段
 			"content": {
 				"type": "string",
-				"store": "no",	// 当前字段不存储
+				"store": "no", // 当前字段不存储
 				"analyzer": "ik",
 				"search_analyzer": "ik"
 			},
@@ -54,7 +54,7 @@
 				"store": "no",
 				"analyzer": "ik",
 				"search_analyzer": "ik",
-				"boost": 5	// 权重
+				"boost": 5 // 权重
 			},
 			"author": {
 				"type": "string",
@@ -75,29 +75,29 @@
 ["curl -XPUT 'http://localhost:9200/index/news'"]
 // 添加数据
 {
-  "content": "中国总理李克强访问德国，并会见了德国总理默克尔",
-  "title": "中国总理出访",
-  "author": "张三",
-  "publish_date": "2015/06/08",
-  "category": "国际新闻"
+	"content": "中国总理李克强访问德国，并会见了德国总理默克尔",
+	"title": "中国总理出访",
+	"author": "张三",
+	"publish_date": "2015/06/08",
+	"category": "国际新闻"
 }
 ["curl -XPUT 'http://localhost:9200/index/news/123'"]
 // 添加数据,指定ID
 {
-  "content": "中国总理李克强访问德国，并会见了德国总理默克尔",
-  "title": "中国总理出访",
-  "author": "张三",
-  "publish_date": "2015/06/08",
-  "category": "国际新闻"
+	"content": "中国总理李克强访问德国，并会见了德国总理默克尔",
+	"title": "中国总理出访",
+	"author": "张三",
+	"publish_date": "2015/06/08",
+	"category": "国际新闻"
 }
 ["curl -XPUT 'http://localhost:9200/index/news/_create'"]
 // _create添加数据
 {
-  "content": "中国总理李克强访问德国，并会见了德国总理默克尔",
-  "title": "中国总理出访",
-  "author": "张三",
-  "publish_date": "2015/06/08",
-  "category": "国际新闻"
+	"content": "中国总理李克强访问德国，并会见了德国总理默克尔",
+	"title": "中国总理出访",
+	"author": "张三",
+	"publish_date": "2015/06/08",
+	"category": "国际新闻"
 }
 
 ["curl -XPOST 'http://localhost:9200/index/news/_search/'"]
@@ -105,7 +105,7 @@
 {
 	"from": 0,
 	"size": 10,
-	"fields": ["title", "content", "publish_date", "category", "author"],	// 指定检索结果document集合中含有那些域
+	"fields": ["title", "content", "publish_date", "category", "author"], // 指定检索结果document集合中含有那些域
 	"sort": [{
 			"publish_date": {
 				"order": "asc"
@@ -114,7 +114,7 @@
 		"_score"
 	],
 	"query": {
-		"bool": {	// 构建布尔查询
+		"bool": { // 构建布尔查询
 			"should": [{
 				"term": {
 					"title": "中国"
@@ -126,7 +126,7 @@
 			}]
 		}
 	},
-	"filter": {	// 创建过滤规则
+	"filter": { // 创建过滤规则
 		"range": {
 			"publish_date": {
 				"from": "2015/01/01",
@@ -136,15 +136,15 @@
 			}
 		}
 	},
-	"highlight": {	// 高亮
+	"highlight": { // 高亮
 		"pre_tags": ["<tag1>", "<tag2>"],
 		"post_tags": ["</tag1>", "</tag2>"],
-		"fields": {	// 需高亮的域
+		"fields": { // 需高亮的域
 			"title": {},
 			"content": {}
 		}
 	},
-	"facets": {
+	"aggs": {
 		"cate": {
 			"terms": {
 				"field": "category"
@@ -175,8 +175,7 @@
 
 // 设置中文分词器
 ["curl -XPOST 'http://localhost:9200/index/_close'"]
-["curl -XPUT 'http://localhost:9200/index/_settings' -d"]
-{
+["curl -XPUT 'http://localhost:9200/index/_settings' -d"] {
 	"analysis": {
 		"analyzer": {
 			"content": {
@@ -198,42 +197,35 @@
 ["curl -XDELETE 'http://localhost:9200/index/type/2'"]
 // 更新指定的文档信息
 ["curl -XPUT 'http://localhost:9200/index/type/2'"]
-["curl -XPOST 'http://localhost:9200/index/type/2'"]
-{
+["curl -XPOST 'http://localhost:9200/index/type/2'"] {
 	"user": "LiM",
 	"post_date": "2015-01-01T14:12:12",
 	"message": "Hello",
 	"like": 3
 }
-["curl -XPOST 'http://localhost:9200/index/type/2/_update'"]
-{
+["curl -XPOST 'http://localhost:9200/index/type/2/_update'"] {
 	"script": "ctx._source.like += count",
 	"params": {
 		"count": 4
 	},
-	"upsert": {	// 不存在则创建
+	"upsert": { // 不存在则创建
 		"counter": 1
 	}
-}
-{
+} {
 	"script": "ctx._source.name_of_new_field=\"new_field\""
 }
 // 基于POST方式批量获取文档
-["curl -XPOST 'http://localhost:9200/index/type/_mget'"]
-{
-	"docs": [
-		{
-			"_index": "index",
-			"_type": "type",
-			"_id": "5",
-			"_source": false
-		},
-		{
-			"_index": "index",
-			"_type": "type",
-			"_id": "7"
-		}
-	]
+["curl -XPOST 'http://localhost:9200/index/type/_mget'"] {
+	"docs": [{
+		"_index": "index",
+		"_type": "type",
+		"_id": "5",
+		"_source": false
+	}, {
+		"_index": "index",
+		"_type": "type",
+		"_id": "7"
+	}]
 }
 // 删除部分文档
 ["curl -XDELETE 'http://localhost:9200/index/type/_query?q=user:LiM'"]
@@ -251,7 +243,7 @@
 // 设置不同字段的排序权重
 {
 	"query": {
-		"multi_match": {	// 跨字段检索
+		"multi_match": { // 跨字段检索
 			"query": "mingle",
 			"fields": ["title^2", "content"]
 		}
@@ -260,7 +252,7 @@
 // 通过_source参数指定返回的检索字段集
 {
 	"query": {
-		"match_all": {}	// 查询所有内容
+		"match_all": {} // 查询所有内容
 	},
 	"_source": ["url", "taglist"]
 }
@@ -280,7 +272,7 @@
 	"query": {
 		"terms": {
 			"title": ["中国", "美国"],
-			"minimum_match": 1	// 设置最小匹配集的大小
+			"minimum_match": 1 // 设置最小匹配集的大小
 		}
 	}
 }
@@ -298,27 +290,24 @@
 	},
 	"_source": ["url", "taglist"],
 	"size": 10
-}
-{
+} {
 	"query": {
 		"match": {
 			"_all": "mingle"
 		}
 	}
-}
-{
+} {
 	"query": {
-		"match_phrase": {	// 查询词组
+		"match_phrase": { // 查询词组
 			"taglist": "mingle is a man"
 		}
 	}
-}
-{
+} {
 	"query": {
 		"match_phrase": {
 			"title": {
 				"query": "中国 and 美国",
-				"slop": 2	// 在查询文本的词项间的间隔词数量
+				"slop": 2 // 在查询文本的词项间的间隔词数量
 			}
 		}
 	},
@@ -329,7 +318,7 @@
 	"query": {
 		"query_string": {
 			"query": "title:中国^2 + title:美国 - content:日本",
-			"default_field": "title"	// 默认为_all
+			"default_field": "title" // 默认为_all
 		}
 	}
 }
@@ -344,8 +333,7 @@
 		}
 	},
 	"_source": ["title"]
-}
-{
+} {
 	"query": {
 		"range": {
 			"gatherTime": {
@@ -384,10 +372,10 @@
 		"fuzzy_like_this": {
 			"fields": ["title", "keywords"],
 			"like_text": "Prefer",
-			"ignore_tf": false,	// 指定忽略词项的频次,默认为false
+			"ignore_tf": false, // 指定忽略词项的频次,默认为false
 			"max_query_terms": 25,
-			"min_similarity": 0.8,	// 最小相似度
-			"prefix_length": 0.2,	// 共同前缀的长度,默认是0
+			"min_similarity": 0.8, // 最小相似度
+			"prefix_length": 0.2, // 共同前缀的长度,默认是0
 			"boost": 2
 		},
 		"_source": ["title"]
@@ -419,18 +407,15 @@
 {
 	"query": {
 		"filter": {
-			"or": [
-				{
-					"term": {
-						"content": "Computer"
-					}
-				},
-				{
-					"term": {
-						"content": "Cat"
-					}
+			"or": [{
+				"term": {
+					"content": "Computer"
 				}
-			]
+			}, {
+				"term": {
+					"content": "Cat"
+				}
+			}]
 		}
 	}
 }
@@ -438,21 +423,18 @@
 {
 	"query": {
 		"filter": {
-			"and": [
-				{
-					"range": {
-						"time": {
-							"from": "now-6d",
-							"to": "now"
-						}
-					}
-				},
-				{
-					"term": {
-						"content": "Cat"
+			"and": [{
+				"range": {
+					"time": {
+						"from": "now-6d",
+						"to": "now"
 					}
 				}
-			],
+			}, {
+				"term": {
+					"content": "Cat"
+				}
+			}],
 			"_cache": true
 		}
 	}
@@ -488,8 +470,7 @@
 			}
 		}
 	}
-}
-{
+} {
 	"query": {
 		"filter": {
 			"missing": {
@@ -575,10 +556,105 @@
 			"minimum_match": 3
 		}
 	},
-	"sort": [
-		{
-			"_score": "desc",
-			"missing": "_last"	// 对于无值的,放在最后显示
+	"sort": [{
+		"_score": "desc",
+		"missing": "_last" // 对于无值的,放在最后显示
+	}]
+}
+
+// term统计
+{
+	"query": {
+		"query_string": {
+			"query": "中国 and 美国"
 		}
-	]
+	},
+	"aggs": {
+		"results": {
+			"terms": {
+				"field": "content",
+				"size": 2
+			}
+		}
+	}
+} {
+	"query": {
+		"match_all": {}
+	},
+	"aggs": {
+		"results": {
+			"terms": {
+				"field": "content",
+				"size": 2,
+				"order": "term" // 字母顺序
+			}
+		}
+	}
+}
+// fields跨字段统计
+{
+	"query": {
+		"match_all": {}
+	},
+	"aggs": {
+		"results": {
+			"terms": {
+				"fields": ["content", "title"],
+				"size": 2
+			}
+		}
+	}
+}
+// exclude排除项
+{
+	"query": {
+		"match_all": {}
+	},
+	"aggs": {
+		"results": {
+			"terms": {
+				"field": "statusCode",
+				"exclude": ["200", "201"]
+			}
+		}
+	}
+}
+// Order
+{
+	"query": {
+		"match_all": {}
+	},
+	"aggs": {
+		"results": {
+			"terms": {
+				"field": "uri",
+				"size": 5,
+				"order": {
+					"_count": "asc"
+				},
+				"min_doc_count": 1
+			}
+		}
+	}
+}
+// Range
+{
+	"query": {
+		"match_all": {}
+	},
+	"aggs": {
+		"price_ranges": {
+			"range": {
+				"field": "price",
+				"ranges": [{
+					"to": 50
+				}, {
+					"from": 50,
+					"to": 100
+				}, {
+					"from": 100
+				}]
+			}
+		}
+	}
 }
